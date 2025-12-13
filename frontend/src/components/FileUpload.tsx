@@ -3,76 +3,69 @@ import { uploadFile } from '../services/api';
 
 interface FileUploadProps {
     apiKey: string;
-    onUploadSuccess: () => void;
+    enabled: boolean;
+    onUploadSuccess: (filename: string) => void;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ apiKey, onUploadSuccess }) => {
-    const [file, setFile] = useState<File | null>(null);
+const FileUpload: React.FC<FileUploadProps> = ({ apiKey, enabled, onUploadSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!enabled) return;
+
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
             if (selectedFile.type !== 'application/pdf') {
                 setError('Only PDF files are allowed.');
-                setFile(null);
                 return;
             }
-            setFile(selectedFile);
-            setError(null);
+
+            // Upload immediately on selection
+            await processUpload(selectedFile);
         }
     };
 
-    const handleUpload = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!file) return;
-
+    const processUpload = async (file: File) => {
         setLoading(true);
         setError(null);
-
         try {
-            const response = await uploadFile(apiKey, file);
-            setSuccess(response.message || 'File processed successfully!');
-
-            // Navigate after short delay to show success message
+            await uploadFile(apiKey, file);
+            // Short delay for visual feedback
             setTimeout(() => {
-                onUploadSuccess();
-            }, 1500);
-
+                onUploadSuccess(file.name);
+            }, 800);
         } catch (err: any) {
-            console.error(err);
             setError(err.message || 'Upload failed');
-            setLoading(false); // Only unset loading if error, otherwise we are navigating
+            setLoading(false);
         }
     };
 
     return (
-        <div className="glass-card fade-in">
-            <h1>Upload Document</h1>
-            <p>Upload a PDF to start chatting with it.</p>
+        <div className="upload-container fade-enter">
+            <label className={`upload-area ${!enabled ? 'disabled' : ''}`}>
+                <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    disabled={!enabled || loading}
+                    style={{ display: 'none' }}
+                />
 
-            <form onSubmit={handleUpload} className="upload-form">
-                <label className={`file-drop-area ${file ? 'has-file' : ''}`}>
-                    <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleFileChange}
-                        disabled={loading}
-                    />
-                    <span className="file-msg">
-                        {file ? file.name : 'Click to select a PDF file'}
-                    </span>
-                </label>
+                <span className="upload-icon">
+                    {loading ? '⏳' : (enabled ? '☁️' : '🔒')}
+                </span>
 
-                {error && <div className="error-msg">⚠️ {error}</div>}
-                {success && <div className="success-msg">✅ {success}</div>}
+                <h3 className="upload-text-main">
+                    {loading ? 'Processing Document...' : (enabled ? 'Click to Upload PDF' : 'Validate Key to Upload')}
+                </h3>
 
-                <button type="submit" className="btn full-width" disabled={loading || !file}>
-                    {loading ? <div className="spinner" /> : 'Upload and Process'}
-                </button>
-            </form>
+                <p className="upload-text-sub">
+                    {loading ? 'Please wait while we index the content.' : 'Supported format: .pdf'}
+                </p>
+
+                {error && <p style={{ color: 'var(--error)', marginTop: '1rem' }}>{error}</p>}
+            </label>
         </div>
     );
 };

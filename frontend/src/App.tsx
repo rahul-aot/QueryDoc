@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import type { AppScreen } from './types';
 import { getSessionId, getNewSessionId, clearSession } from './services/api';
 import ApiKeyInput from './components/ApiKeyInput';
 import FileUpload from './components/FileUpload';
 import ChatInterface from './components/ChatInterface';
 
 const App: React.FC = () => {
-  const [screen, setScreen] = useState<AppScreen>('api-key');
   const [apiKey, setApiKey] = useState<string>('');
+  const [isKeyValid, setIsKeyValid] = useState(false);
+  const [fileUploaded, setFileUploaded] = useState(false);
+  const [fileName, setFileName] = useState<string>('');
 
   useEffect(() => {
     const init = async () => {
       const existingSession = getSessionId();
       if (existingSession) {
-        // Attempt to clear old session data on backend
-        // We pass empty string for api key as it's not available on reload
-        try {
-          await clearSession('');
-        } catch (e) {
-          console.warn("Failed to clear previous session", e);
-        }
+        try { await clearSession(''); } catch (e) { }
       }
       getNewSessionId();
     };
@@ -28,36 +23,65 @@ const App: React.FC = () => {
 
   const handleKeyValidated = (key: string) => {
     setApiKey(key);
-    setScreen('upload');
+    setIsKeyValid(true);
   };
 
-  const handleUploadSuccess = () => {
-    setScreen('chat');
+  const handleUploadSuccess = (name: string) => {
+    setFileName(name);
+    setFileUploaded(true);
   };
 
-  const handleClearSession = async () => {
-    // Clear on backend
+  const handleReset = async () => {
     await clearSession(apiKey);
-    // Generate new session
     getNewSessionId();
-    // Reset state
     setApiKey('');
-    setScreen('api-key');
+    setIsKeyValid(false);
+    setFileUploaded(false);
+    setFileName('');
   };
 
   return (
-    <>
-      {/* Background is handled in index.css body */}
-      {screen === 'api-key' && (
-        <ApiKeyInput onKeyValidated={handleKeyValidated} />
-      )}
-      {screen === 'upload' && (
-        <FileUpload apiKey={apiKey} onUploadSuccess={handleUploadSuccess} />
-      )}
-      {screen === 'chat' && (
-        <ChatInterface apiKey={apiKey} onClearSession={handleClearSession} />
-      )}
-    </>
+    <div className="app-wrapper">
+      {/* Header */}
+      <header className="app-header">
+        <div className="header-content">
+          <h1>AI Document Q&A</h1>
+          <p>Secure RAG System powered by Gemini</p>
+        </div>
+        <button onClick={handleReset} className="btn btn-ghost">
+          ↺ Reset Session
+        </button>
+      </header>
+
+      {/* Main Content */}
+      <div className="main-grid">
+
+        {/* Left Panel: Configuration */}
+        <aside className="left-panel">
+          <ApiKeyInput
+            onKeyValidated={handleKeyValidated}
+            locked={isKeyValid}
+          />
+        </aside>
+
+        {/* Right Panel: Dynamic Interaction */}
+        <main className="right-panel">
+          {!fileUploaded ? (
+            <FileUpload
+              apiKey={apiKey}
+              enabled={isKeyValid}
+              onUploadSuccess={handleUploadSuccess}
+            />
+          ) : (
+            <ChatInterface
+              apiKey={apiKey}
+              fileName={fileName}
+            />
+          )}
+        </main>
+
+      </div>
+    </div>
   );
 };
 

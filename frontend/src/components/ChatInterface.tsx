@@ -4,10 +4,10 @@ import type { ChatMessage } from '../types';
 
 interface ChatInterfaceProps {
     apiKey: string;
-    onClearSession: () => void;
+    fileName: string;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, onClearSession }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileName }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -49,49 +49,57 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, onClearSession })
     };
 
     return (
-        <div className="chat-container fade-in">
-            <div className="chat-header glass-card">
-                <h1>Document Chat</h1>
-                <button onClick={onClearSession} className="btn btn-secondary danger-btn">
-                    Clear Session
-                </button>
+        <div className="chat-wrapper fade-enter">
+            <div className="chat-header-mini">
+                <span>Conversing with <strong>{fileName}</strong></span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--success)' }}>● Active</span>
             </div>
 
             <div className="chat-messages">
                 {messages.length === 0 && (
-                    <div className="empty-state">
-                        <p>Ask a question about your uploaded document to get started.</p>
+                    <div style={{
+                        textAlign: 'center',
+                        color: 'var(--text-secondary)',
+                        marginTop: '4rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '1rem'
+                    }}>
+                        <div style={{ fontSize: '3rem' }}>💬</div>
+                        <p>Ask anything about the document to start.</p>
                     </div>
                 )}
 
                 {messages.map((msg, idx) => (
-                    <div key={idx} className={`message-row ${msg.role === 'user' ? 'user-row' : 'model-row'}`}>
-                        <div className={`message-bubble ${msg.role}`}>
-                            {msg.content}
-                        </div>
+                    <div key={idx} className={`message-bubble ${msg.role === 'user' ? 'msg-user' : 'msg-model'}`}>
+                        {msg.content}
                     </div>
                 ))}
+
                 {loading && (
-                    <div className="message-row model-row">
-                        <div className={`message-bubble model typing`}>
-                            <div className="dot"></div><div className="dot"></div><div className="dot"></div>
+                    <div className="message-bubble msg-model" style={{ width: 'fit-content' }}>
+                        <div className="typing-dots">
+                            <div className="dot"></div>
+                            <div className="dot"></div>
+                            <div className="dot"></div>
                         </div>
                     </div>
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="chat-input-area glass-card">
-                <form onSubmit={handleSend} className="input-row">
+            <div className="chat-input-wrapper">
+                <form onSubmit={handleSend} className="chat-form">
                     <input
                         type="text"
                         className="input-field"
                         value={input}
                         onChange={e => setInput(e.target.value)}
-                        placeholder="Ask a question..."
+                        placeholder="Type your question here..."
                         disabled={loading}
                     />
-                    <button type="submit" className="btn" disabled={loading || !input.trim()}>
+                    <button type="submit" className="btn btn-primary" disabled={loading || !input.trim()}>
                         Send
                     </button>
                 </form>

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { validateKey } from '../services/api';
 
-
 interface ApiKeyInputProps {
     onKeyValidated: (key: string) => void;
+    locked: boolean;
 }
 
-const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onKeyValidated }) => {
+const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onKeyValidated, locked }) => {
     const [key, setKey] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -19,40 +19,50 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onKeyValidated }) => {
         setError(null);
 
         try {
-            const isValid = await validateKey(key);
-            if (isValid) {
+            const valid = await validateKey(key);
+            if (valid) {
                 onKeyValidated(key);
             } else {
-                setError('Invalid API Key. Please check and try again.');
+                setError('Invalid API Key');
             }
         } catch (err) {
-            setError('Connection failed. Is the backend running?');
+            setError('Connection failed');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="glass-card fade-in">
-            <h1>Enter API Key</h1>
-            <p>Securely access the document RAG system.</p>
+        <div className={`saas-card fade-enter ${locked ? 'api-status-locked' : ''}`}>
+            <div className="card-title">
+                <span>API Key Setup</span>
+                {locked && (
+                    <div className="locked-badge">
+                        ✓ Active
+                    </div>
+                )}
+            </div>
 
-            <form onSubmit={handleSubmit} className="auth-form">
-                <div className="input-group">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
                     <input
                         type="password"
                         value={key}
                         onChange={(e) => setKey(e.target.value)}
-                        placeholder="Gemini API Key"
+                        placeholder="Enter Gemini API Key"
                         className="input-field"
-                        disabled={loading}
+                        disabled={loading || locked}
                     />
+                    {error && <p style={{ color: 'var(--error)', fontSize: '0.85rem', marginTop: '0.5rem' }}>{error}</p>}
                 </div>
 
-                {error && <div className="error-msg">⚠️ {error}</div>}
-
-                <button type="submit" className="btn full-width" disabled={loading || !key}>
-                    {loading ? <div className="spinner" /> : 'Validate Key'}
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading || !key || locked}
+                    style={{ width: '100%' }}
+                >
+                    {loading ? 'Validating...' : (locked ? 'Authenticated' : 'Validate Key')}
                 </button>
             </form>
         </div>
