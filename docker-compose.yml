@@ -3,7 +3,7 @@ version: '3.8'
 services:
   backend:
     build: ./backend
-    container_name: rag-backend
+    container_name: querydoc-backend
     ports:
       - "8000:8000"
     environment:
@@ -13,7 +13,7 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: rag-frontend
+    container_name: querydoc-frontend
     ports:
       - "5173:80"
     depends_on:

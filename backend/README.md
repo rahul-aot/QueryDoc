@@ -1,4 +1,4 @@
-# RAG Backend API
+# QueryDoc Backend API
 
 This is the FastAPI backend for the Document RAG (Retrieval-Augmented Generation) application. It handles file processing, embeddings, vector storage, and chat interactions using Google's Gemini API.
 

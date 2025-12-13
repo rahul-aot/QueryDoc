@@ -1,4 +1,4 @@
-# AI Document RAG System
+# QueryDoc
 
 A complete full-stack application for securely chatting with PDF documents using Retrieval-Augmented Generation (RAG) and Google's Gemini API.
 

@@ -1,4 +1,4 @@
-# RAG Frontend
+# QueryDoc Frontend
 
 A modern, responsive React application for interacting with the Document RAG system. It features a professional SaaS-like UI with a focus on usability and aesthetics.
 

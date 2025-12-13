@@ -45,8 +45,8 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="app-header">
         <div className="header-content">
-          <h1>AI Document Q&A</h1>
-          <p>Secure RAG System powered by Gemini</p>
+          <h1>QueryDoc</h1>
+          <p>Secure AI Document Assistant</p>
         </div>
         <button onClick={handleReset} className="btn btn-ghost">
           ↺ Reset Session
