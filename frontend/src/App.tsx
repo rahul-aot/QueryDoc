@@ -14,7 +14,11 @@ const App: React.FC = () => {
     const init = async () => {
       const existingSession = getSessionId();
       if (existingSession) {
-        try { await clearSession(''); } catch (e) { }
+        try {
+          await clearSession('');
+        } catch {
+          // Ignore errors during cleanup
+        }
       }
       getNewSessionId();
     };

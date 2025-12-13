@@ -35,8 +35,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ apiKey, enabled, onUploadSucces
             setTimeout(() => {
                 onUploadSuccess(file.name);
             }, 800);
-        } catch (err: any) {
-            setError(err.message || 'Upload failed');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Upload failed');
             setLoading(false);
         }
     };

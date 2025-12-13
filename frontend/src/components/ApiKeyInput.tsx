@@ -25,7 +25,7 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onKeyValidated, locked }) => 
             } else {
                 setError('Invalid API Key');
             }
-        } catch (err) {
+        } catch {
             setError('Connection failed');
         } finally {
             setLoading(false);

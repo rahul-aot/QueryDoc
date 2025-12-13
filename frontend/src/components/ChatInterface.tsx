@@ -37,10 +37,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileName }) => {
             const response = await askQuestion(apiKey, question);
             const aiMsg: ChatMessage = { role: 'model', content: response.answer };
             setMessages(prev => [...prev, aiMsg]);
-        } catch (err: any) {
+        } catch (err: unknown) {
             const errorMsg: ChatMessage = {
                 role: 'model',
-                content: `Error: ${err.message || 'Something went wrong.'}`
+                content: `Error: ${err instanceof Error ? err.message : 'Something went wrong.'}`
             };
             setMessages(prev => [...prev, errorMsg]);
         } finally {
