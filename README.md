@@ -8,6 +8,73 @@ A complete full-stack application for securely chatting with PDF documents using
 - **Backend**: FastAPI (Python). Handles embedding generation, vector search, and LLM interaction.
 - **Infrastructure**: Docker & Docker Compose for easy deployment.
 
+### System Diagram
+
+```mermaid
+graph TD
+    User([User])
+    subgraph "Frontend (React + Vite)"
+        UI[Browser UI]
+        State[Local State]
+    end
+    subgraph "Backend (FastAPI)"
+        API[API Endpoints]
+        subgraph "Ingestion"
+            PDF[PDF Loader]
+            Split[Text Splitter]
+        end
+        subgraph "Vector Store"
+            VS[(FAISS Index)]
+            JSON[(JSON Chunks)]
+        end
+        LLM[Gemini Pro API]
+    end
+
+    User <--> UI
+    UI <--> State
+    State <--> API
+    API --> PDF
+    PDF --> Split
+    Split --> LLM
+    LLM --> VS
+    API --> VS
+    VS --> JSON
+    JSON --> LLM
+    LLM --> API
+```
+
+### RAG Workflow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant FAISS
+    participant Gemini
+
+    Note over User, Gemini: Document Ingestion
+    User->>Frontend: Upload PDF
+    Frontend->>Backend: POST /upload
+    Backend->>Backend: Extract & Split Text
+    Backend->>Gemini: Generate Embeddings
+    Gemini-->>Backend: Vector Data
+    Backend->>FAISS: Save Index & Chunks
+    Backend-->>Frontend: Ready (200 OK)
+
+    Note over User, Gemini: Retrieval-Augmented Generation
+    User->>Frontend: Ask Question
+    Frontend->>Backend: POST /ask
+    Backend->>Gemini: Embed Question
+    Gemini-->>Backend: Query Vector
+    Backend->>FAISS: Similarity Search
+    FAISS-->>Backend: Context Chunks
+    Backend->>Gemini: Context + Question
+    Gemini-->>Backend: Generated Answer
+    Backend-->>Frontend: Answer
+    Frontend-->>User: Display Response
+```
+
 ## Quick Start (Docker)
 
 The easiest way to run the entire system is with Docker Compose.
